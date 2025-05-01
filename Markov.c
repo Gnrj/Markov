@@ -24,6 +24,15 @@ void replace_string(char* string, char* target, char* replacement) {
     string[string_len - target_len + replacement_len] = '\0';
 }
 
+void prepend_string(char* string, char* target) {
+    int string_len = strlen(string);
+    int target_len = strlen(target);
+
+    memmove(string + target_len, string, string_len + 1);
+    memcpy(string, target, target_len);
+    string[string_len + target_len] = '\0';
+}
+
 int change_string(char* string, Command* all_commands, int all_commands_len, int check) {
     int end_change = 1;
 
@@ -43,7 +52,7 @@ int change_string(char* string, Command* all_commands, int all_commands_len, int
                     printf("%d) %s -> ", cnt, string);
                 }
 
-                strcat(string, all_commands[i].second_str);
+                prepend_string(string, all_commands[i].second_str);
 
                 if (check > 0) {
                     printf("%s;\n", string);
