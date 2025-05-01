@@ -4,14 +4,16 @@
 
 #define SIZE_OF_STRING 1002
 
-typedef struct Command Command;
+typedef struct Substitution Substitution;
 
-struct Command {
+// Struct for substitution
+struct Substitution {
     char fisrt_str[SIZE_OF_STRING];
     char arrow[4];
     char second_str[SIZE_OF_STRING];
 };
 
+// Replace tarhet to replacement in the string
 void replace_string(char* string, char* target, char* replacement) {
     int string_len = strlen(string);
     int target_len = strlen(target);
@@ -24,6 +26,7 @@ void replace_string(char* string, char* target, char* replacement) {
     string[string_len - target_len + replacement_len] = '\0';
 }
 
+// Add a target to the beginning of the string
 void prepend_string(char* string, char* target) {
     int string_len = strlen(string);
     int target_len = strlen(target);
@@ -33,31 +36,34 @@ void prepend_string(char* string, char* target) {
     string[string_len + target_len] = '\0';
 }
 
-int change_string(char* string, Command* all_commands, int all_commands_len, int check) {
+// Run the algorithm for a single string
+int change_string(char* string, Substitution* all_substitutions, int all_substitutions_len, int check) {
     int end_change = 1;
 
     int cnt = 1;
 
     while (end_change) {
-        for (int i = 0; i < all_commands_len; i++) {
-            if (strcmp(all_commands[i].fisrt_str, "_") == 0) {
+        for (int i = 0; i < all_substitutions_len; i++) {
+            // First_str is space
+            if (strcmp(all_substitutions[i].fisrt_str, "_") == 0) {
 
-                if (strlen(string) + strlen(all_commands[i].second_str) >= SIZE_OF_STRING) {
+                if (strlen(string) + strlen(all_substitutions[i].second_str) >= SIZE_OF_STRING) {
                     printf("Buffer overflow\n");
 
                     return 1;
                 }
 
+                // To display changes in terminal
                 if (check > 0) {
                     printf("%d) %s -> ", cnt, string);
                 }
 
-                prepend_string(string, all_commands[i].second_str);
+                prepend_string(string, all_substitutions[i].second_str);
 
                 if (check > 0) {
                     printf("%s;\n", string);
 
-                    printf("%s -> %s\n\n", all_commands[i].fisrt_str, all_commands[i].second_str);
+                    printf("%s -> %s\n\n", all_substitutions[i].fisrt_str, all_substitutions[i].second_str);
 
                     cnt++;
 
@@ -72,33 +78,35 @@ int change_string(char* string, Command* all_commands, int all_commands_len, int
                 break;
             }
 
-            if (strstr(string, all_commands[i].fisrt_str) != NULL) {
+            // First_str is substring of string
+            if (strstr(string, all_substitutions[i].fisrt_str) != NULL) {
 
-                if (strlen(string) + strlen(all_commands[i].second_str) - strlen(all_commands[i].fisrt_str) >= SIZE_OF_STRING) {
+                if (strlen(string) + strlen(all_substitutions[i].second_str) - strlen(all_substitutions[i].fisrt_str) >= SIZE_OF_STRING) {
                     printf("Buffer overflow\n");
 
                     return 1;
                 }
 
                 if (check > 0) {
-                    printf("%d) %s %s ", cnt, string, all_commands[i].arrow);
+                    printf("%d) %s %s ", cnt, string, all_substitutions[i].arrow);
                 }
 
-                if (strcmp(all_commands[i].second_str, "_") == 0) {
+                // Second_str is space
+                if (strcmp(all_substitutions[i].second_str, "_") == 0) {
                     char s_help[] = "";
-                    replace_string(string, all_commands[i].fisrt_str, s_help);
+                    replace_string(string, all_substitutions[i].fisrt_str, s_help);
                 } else {
-                    replace_string(string, all_commands[i].fisrt_str, all_commands[i].second_str);
+                    replace_string(string, all_substitutions[i].fisrt_str, all_substitutions[i].second_str);
                 }
 
-                if (strcmp(all_commands[i].arrow, "|->") == 0) {
+                if (strcmp(all_substitutions[i].arrow, "|->") == 0) {
                     end_change = 0;
                 }
 
                 if (check > 0) {
                     printf("%s;\n", string);
 
-                    printf("%s %s %s\n\n", all_commands[i].fisrt_str, all_commands[i].arrow, all_commands[i].second_str);
+                    printf("%s %s %s\n\n", all_substitutions[i].fisrt_str, all_substitutions[i].arrow, all_substitutions[i].second_str);
 
                     cnt++;
 
@@ -116,13 +124,14 @@ int change_string(char* string, Command* all_commands, int all_commands_len, int
 
         int all = 1;
 
-        for (int i = 0; i < all_commands_len; i++) {
-            if (strstr(string, all_commands[i].fisrt_str) != NULL) {
+        // Checking if the substitution can be performed
+        for (int i = 0; i < all_substitutions_len; i++) {
+            if (strstr(string, all_substitutions[i].fisrt_str) != NULL) {
                 all = 0;
                 break;
             }
 
-            if (strcmp(all_commands[i].fisrt_str, "_") == 0) {
+            if (strcmp(all_substitutions[i].fisrt_str, "_") == 0) {
                 all = 0;
                 break;
             }
@@ -133,6 +142,7 @@ int change_string(char* string, Command* all_commands, int all_commands_len, int
         }
     }
 
+    // Deleting all "_"
     while (strstr(string, "_") != NULL) {
         char s1_help[] = "";
         char s2_help[] = "_";
@@ -146,9 +156,9 @@ int change_string(char* string, Command* all_commands, int all_commands_len, int
 
 int main(void) {
 
-    Command* all_commands = (Command*)malloc(sizeof(Command) * 20);
+    Substitution* all_substitutions = (Substitution*)malloc(sizeof(Substitution) * 20);
 
-    int all_commands_len = 20;
+    int all_substitutions_len = 20;
 
     int cnt_commands = 0;
 
@@ -159,21 +169,21 @@ int main(void) {
     int end_stdin = 1;
 
     while (end_stdin != 0) {
-        scanf("%s %s %s", all_commands[cnt_commands].fisrt_str,
-              all_commands[cnt_commands].arrow, all_commands[cnt_commands].second_str);
+        scanf("%s %s %s", all_substitutions[cnt_commands].fisrt_str,
+              all_substitutions[cnt_commands].arrow, all_substitutions[cnt_commands].second_str);
 
-        end_stdin = strcmp(all_commands[cnt_commands].arrow, "is");
+        end_stdin = strcmp(all_substitutions[cnt_commands].arrow, "is");
 
         cnt_commands++;
 
-        if (cnt_commands >= all_commands_len) {
-            all_commands_len <<= 1;
+        if (cnt_commands >= all_substitutions_len) {
+            all_substitutions_len <<= 1;
 
-            all_commands = (Command*)realloc(all_commands, all_commands_len);
+            all_substitutions = (Substitution*)realloc(all_substitutions, all_substitutions_len);
         }
     }
 
-    all_commands_len = cnt_commands - 1;
+    all_substitutions_len = cnt_commands - 1;
 
     printf("If you want detailed check, please enter 2.\n");
     printf("If you want fast check, please enter 1.\n");
@@ -190,7 +200,7 @@ int main(void) {
     scanf("%s", string);
 
     while (strcmp(string, "stop") != 0) {
-        int errors = change_string(string, all_commands, all_commands_len, check);
+        int errors = change_string(string, all_substitutions, all_substitutions_len, check);
 
         if (errors)
             return 0;
